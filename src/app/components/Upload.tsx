@@ -1,20 +1,18 @@
 "use client";
 import { UploadButton } from "@uploadthing/react";
 import { OurFileRouter } from "../api/uploadthing/core";
+import { newPictures } from "../actions";
 
 export default function Upload() {
   return (
     <>
       <UploadButton<OurFileRouter>
         endpoint="imageUploader"
-        onClientUploadComplete={(res) => {
-          // Do something with the response
-          console.log("Files: ", res);
-          alert("Upload Completed");
+        onClientUploadComplete={async (res) => {
+          if (!res) return;
+          newPictures(res.map((r) => ({ url: r.fileUrl })));
         }}
         onUploadError={(error: Error) => {
-          // Do something with the error.
-          alert(`ERROR! ${error.message}`);
           console.error(error);
         }}
       />
