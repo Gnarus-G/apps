@@ -1,5 +1,6 @@
 "use client";
 import { UploadButton } from "@uploadthing/react";
+import "@uploadthing/react/styles.css";
 import { OurFileRouter } from "../api/uploadthing/core";
 import { newPictures } from "../actions";
 
