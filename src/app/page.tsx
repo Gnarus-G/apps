@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Upload from "./components/Upload";
 import { PicturesTable, db } from "./lib/drizzle";
+import Picture from "./components/Picture";
 
 export default async function Home() {
   const pictures = await db.select().from(PicturesTable);
@@ -17,17 +17,7 @@ export default async function Home() {
           className="grid grid-cols-2 lg:grid-cols-3 gap-3 w-full px-5 md:px-64 lg:px-96"
         >
           {pictures.map((pic) => (
-            <article key={pic.id} className="relative aspect-square">
-              <Image
-                className="object-cover rounded"
-                src={pic.url}
-                alt="Nuri"
-                fill
-                sizes="(max-width: 768px) 90vw, 300px"
-                placeholder="blur"
-                blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mM0tLevBwACiAEwoxWwqwAAAABJRU5ErkJggg=="
-              />
-            </article>
+            <Picture key={pic.id} {...pic} />
           ))}
         </section>
         <aside className="sticky bottom-0 mt-5 w-full">
