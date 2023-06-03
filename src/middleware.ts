@@ -3,12 +3,13 @@ import type { NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
   const isAuthenticated = !!request.cookies.get("token")?.value;
+  const { pathname } = request.nextUrl;
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated && pathname !== "/sign-in") {
     return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 
-  if (request.nextUrl.pathname === "/sign-in") {
+  if (isAuthenticated && pathname === "/sign-in") {
     return NextResponse.redirect(new URL("/", request.url));
   }
 }
