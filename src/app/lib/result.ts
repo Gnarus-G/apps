@@ -42,3 +42,21 @@ export function err(error: Error | string): Result<never> {
 
   return Object.assign(new ResultImpl<never>(r), r);
 }
+
+export function wrap<P extends unknown[], R>(
+  f: (...args: P) => R
+): (...args: P) => Result<R, Error> {
+  return (...a) => {
+    try {
+      return ok(f(...a));
+    } catch (e) {
+      if (e instanceof Error) {
+        return err(e);
+      }
+      if (typeof e === "string") {
+        return err(new Error(e));
+      }
+      return err("unknown error type");
+    }
+  };
+}
