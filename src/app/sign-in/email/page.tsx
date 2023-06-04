@@ -25,9 +25,13 @@ export default function EmailForm({
         if (email) {
           const token = signToken({ forEmail: true }, "5m");
 
+          if (process.env.ALLOWED_EMAIL !== email) {
+            throw new Error("forbidden");
+          }
+
           await sendVerificationRequest({
             to: email,
-            url: `http://localhost:3000/sign-in/token/${token}`,
+            url: `${process.env.APP_URL}/sign-in/token/${token}`,
             theme: {},
           });
 
