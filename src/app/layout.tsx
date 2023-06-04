@@ -6,6 +6,9 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata = {
   title: "Nuri",
   description: "The best goddaughter",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
