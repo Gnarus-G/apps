@@ -38,6 +38,9 @@ dependencies:
   next:
     specifier: 13.4.4
     version: 13.4.4(react-dom@18.2.0)(react@18.2.0)
+  nodemailer:
+    specifier: ^6.9.3
+    version: 6.9.3
   postcss:
     specifier: 8.4.24
     version: 8.4.24
@@ -64,6 +67,9 @@ devDependencies:
   '@types/jsonwebtoken':
     specifier: ^9.0.2
     version: 9.0.2
+  '@types/nodemailer':
+    specifier: ^6.4.8
+    version: 6.4.8
 
 packages:
 
@@ -322,6 +328,12 @@ packages:
 
   /@types/node@20.2.5:
     resolution: {integrity: sha512-JJulVEQXmiY9Px5axXHeYGLSjhkZEnD+MDPDGbCbIAbMslkKwmygtZFy1X6s/075Yo94sf8GuSlFfPzysQrWZQ==}
+
+  /@types/nodemailer@6.4.8:
+    resolution: {integrity: sha512-oVsJSCkqViCn8/pEu2hfjwVO+Gb3e+eTWjg3PcjeFKRItfKpKwHphQqbYmPQrlMk+op7pNNWPbsJIEthpFN/OQ==}
+    dependencies:
+      '@types/node': 20.2.5
+    dev: true
 
   /@types/pg@8.10.1:
     resolution: {integrity: sha512-AmEHA/XxMxemQom5iDwP62FYNkv+gDDnetRG7v2N2dPtju7UKI7FknUimcZo7SodKTHtckYPzaTqUEvUKbVJEA==}
@@ -2106,6 +2118,11 @@ packages:
 
   /node-releases@2.0.12:
     resolution: {integrity: sha512-QzsYKWhXTWx8h1kIvqfnC++o0pEmpRQA/aenALsL2F4pqNVr7YzcdMlDij5WBnwftRbJCNJL/O7zdKaxKPHqgQ==}
+    dev: false
+
+  /nodemailer@6.9.3:
+    resolution: {integrity: sha512-fy9v3NgTzBngrMFkDsKEj0r02U7jm6XfC3b52eoNV+GCrGj+s8pt5OqhiJdWKuw51zCTdiNR/IUD1z33LIIGpg==}
+    engines: {node: '>=6.0.0'}
     dev: false
 
   /normalize-path@3.0.0:

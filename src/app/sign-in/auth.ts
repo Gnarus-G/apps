@@ -16,17 +16,41 @@ async function hash(s: string) {
   return hashHex;
 }
 
-export async function authenticate(
+export function signToken<T extends object>(
+  payload: T,
+  expiresIn: string | number = SEVEN_DAYS
+) {
+  return jwt.sign(payload, secret, {
+    expiresIn,
+  });
+}
+
+export function verifyEmailToken(token: string): Result<true> {
+  try {
+    const s = jwt.verify(token, secret) as { forEmail: boolean };
+    if (s.forEmail) {
+      return ok(true);
+    }
+    return err("provided token not intended for email verification");
+  } catch (e) {
+    console.error(e);
+    return err("token failed verification");
+  }
+}
+
+export async function authenticatePassword(
   userPassword: string
 ): Promise<Result<string>> {
   if (userPassword !== password) {
     return err("wrong password");
   }
+  return authenticate();
+}
+
+export async function authenticate(): Promise<Result<string>> {
   const passwordHash = await hash(password);
 
-  const token = jwt.sign({ hash: passwordHash }, secret, {
-    expiresIn: SEVEN_DAYS,
-  });
+  const token = signToken({ hash: passwordHash });
 
   cookies().set({
     name: "token",
