@@ -18,13 +18,24 @@ class ResultImpl<T, E> {
   }
 }
 
-export function ok<T>(value: T): Result<T, never> {
+export function ok(): Result<void, never>;
+export function ok<T>(value: T): Result<T, never>;
+export function ok<T>(value?: T): Result<T | void, never> {
+  if (value !== undefined && arguments.length > 0) {
+    const result = {
+      isOk: true,
+      value,
+    } as const;
+
+    return Object.assign(result, new ResultImpl<T, never>(result));
+  }
+
   const result = {
     isOk: true,
-    value,
+    value: undefined,
   } as const;
 
-  return Object.assign(result, new ResultImpl<T, never>(result));
+  return Object.assign(result, new ResultImpl<void, never>(result));
 }
 
 export function err<E>(error: E): Result<never, E> {
