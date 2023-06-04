@@ -1,14 +1,13 @@
-export type Result<T, E extends Error = Error> = ResultDto<T, E> &
-  ResultImpl<T, E>;
+export type Result<T, E> = ResultDto<T, E> & ResultImpl<T, E>;
 
-type ResultDto<T, E extends Error = Error> =
+type ResultDto<T, E> =
   | { isOk: true; value: T }
   | {
       isOk: false;
       error: E;
     };
 
-class ResultImpl<T, E extends Error = Error> {
+class ResultImpl<T, E> {
   constructor(private readonly inner: ResultDto<T, E>) {}
 
   unwrap() {
@@ -19,44 +18,32 @@ class ResultImpl<T, E extends Error = Error> {
   }
 }
 
-export function ok<T>(value: T): Result<T, Error> {
+export function ok<T>(value: T): Result<T, never> {
   const result = {
     isOk: true,
     value,
   } as const;
 
-  return Object.assign(result, new ResultImpl(result));
+  return Object.assign(result, new ResultImpl<T, never>(result));
 }
 
-export function err<E extends Error>(e: E): Result<never, E>;
-export function err(message: string): Result<never>;
-export function err(error: Error | string): Result<never> {
-  if (typeof error === "string") {
-    error = new Error(error);
-  }
-
+export function err<E>(error: E): Result<never, E> {
   const r = {
     isOk: false,
     error,
   } as const;
 
-  return Object.assign(new ResultImpl<never>(r), r);
+  return Object.assign(new ResultImpl<never, E>(r), r);
 }
 
 export function wrap<P extends unknown[], R>(
   f: (...args: P) => R
-): (...args: P) => Result<R, Error> {
+): (...args: P) => Result<R, unknown> {
   return (...a) => {
     try {
       return ok(f(...a));
     } catch (e) {
-      if (e instanceof Error) {
-        return err(e);
-      }
-      if (typeof e === "string") {
-        return err(new Error(e));
-      }
-      return err("unknown error type");
+      return err(e);
     }
   };
 }

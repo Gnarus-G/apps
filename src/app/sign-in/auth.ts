@@ -26,32 +26,32 @@ export function signToken<T extends object>(
   });
 }
 
-export function verifyEmailToken(token: string): Result<true> {
+export function verifyEmailToken(token: string): Result<true, Error> {
   try {
     const s = jwt.verify(token, secret) as { forEmail: boolean };
     if (s.forEmail) {
       return ok(true);
     }
-    return err("provided token not intended for email verification");
+    return err(new Error("provided token not intended for email verification"));
   } catch (e) {
     console.error("Email verification error", e);
     if (e instanceof Error) {
       return err(e);
     }
-    return err("unknown error during email verification");
+    return err(new Error("unknown error during email verification"));
   }
 }
 
 export async function authenticatePassword(
   userPassword: string
-): Promise<Result<string>> {
+): Promise<Result<string, string>> {
   if (userPassword !== password) {
     return err("wrong password");
   }
   return authenticate();
 }
 
-export async function authenticate(): Promise<Result<string>> {
+export async function authenticate(): Promise<Result<string, string>> {
   const passwordHash = await hash(password);
 
   const token = signToken({ hash: passwordHash });
