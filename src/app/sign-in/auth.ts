@@ -18,10 +18,9 @@ async function hash(s: string) {
 
 export async function authenticate(
   userPassword: string
-): Promise<string | false> {
+): Promise<Result<string>> {
   if (userPassword !== password) {
-    console.log("wrong password");
-    return false;
+    return err("wrong password");
   }
   const passwordHash = await hash(password);
 
@@ -36,7 +35,21 @@ export async function authenticate(
     expires: Date.now() + SEVEN_DAYS,
   });
 
-  console.log("auth success");
+  return ok(token);
+}
 
-  return token;
+type Result<T> = ReturnType<typeof ok<T>> | ReturnType<typeof err>;
+
+function ok<T>(value: T) {
+  return {
+    isOk: true,
+    value,
+  } as const;
+}
+
+function err(message: string) {
+  return {
+    isOk: false,
+    error: new Error(message),
+  } as const;
 }

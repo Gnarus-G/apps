@@ -13,11 +13,13 @@ export default async function SignIn({
           "use server";
           const password = data.get("password");
           if (password) {
-            const success = await authenticate(password as string);
+            const result = await authenticate(password as string);
 
-            if (success) {
+            if (result.isOk) {
+              console.log("auth success");
               redirect("/");
             } else {
+              console.error(result.error.message);
               redirect("/sign-in?error");
             }
           }
