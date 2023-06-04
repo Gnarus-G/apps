@@ -11,6 +11,15 @@ const nextConfig = {
   experimental: {
     serverActions: true,
   },
+  async redirects() {
+    return [
+      {
+        source: "/sign-in",
+        destination: "/sign-in/email",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;
