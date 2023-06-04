@@ -2,9 +2,11 @@
 import Image from "next/image";
 import React, { useRef } from "react";
 import { Picture } from "../lib/drizzle";
+import { deletePictures as deletePicture } from "../actions";
 
-export default function Picture({ url: src, createdAt }: Picture) {
+export default function Picture({ url: src, createdAt, id }: Picture) {
   const ref = useRef<HTMLDialogElement>(null);
+  const deleteConfirmRef = useRef<HTMLDialogElement>(null);
 
   return (
     <>
@@ -29,7 +31,7 @@ export default function Picture({ url: src, createdAt }: Picture) {
           blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mM0tLevBwACiAEwoxWwqwAAAABJRU5ErkJggg=="
         />
       </article>
-      <dialog ref={ref} className="w-full h-full lg:w-1/2">
+      <dialog ref={ref} className="w-full h-full lg:w-1/2 rounded-lg">
         <div className="relative h-full flex flex-col">
           <h1 className="sticky">
             uploaded {new Date(createdAt).toLocaleString(undefined)}
@@ -45,6 +47,32 @@ export default function Picture({ url: src, createdAt }: Picture) {
             />
           </div>
           <div className="sticky mt-auto bottom-0 right-0 px-5 py-2">
+            <button
+              className="float-left text-red-600"
+              onClick={() => deleteConfirmRef.current?.show()}
+            >
+              Delete Picture
+            </button>
+            <dialog
+              ref={deleteConfirmRef}
+              className="border-slate-600 border-solid border-2 bottom-[100%] rounded-lg"
+            >
+              <p>Are you sure?</p>
+              <div className="flex gap-20 mt-5">
+                <button
+                  className="float-left"
+                  onClick={() => deleteConfirmRef.current?.close()}
+                >
+                  No
+                </button>
+                <button
+                  className="float-right text-red-600"
+                  onClick={() => deletePicture(id)}
+                >
+                  Yes, Delete!
+                </button>
+              </div>
+            </dialog>
             <button
               className="float-right"
               onClick={() => ref.current?.close()}
