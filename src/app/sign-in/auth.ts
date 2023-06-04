@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
+import { Result, err, ok } from "../lib/result";
 
 const SEVEN_DAYS = 1000 * 60 * 60 * 24 * 7;
 
@@ -33,8 +34,11 @@ export function verifyEmailToken(token: string): Result<true> {
     }
     return err("provided token not intended for email verification");
   } catch (e) {
-    console.error(e);
-    return err("token failed verification");
+    console.error("Email verification error", e);
+    if (e instanceof Error) {
+      return err(e);
+    }
+    return err("unknown error during email verification");
   }
 }
 
@@ -60,20 +64,4 @@ export async function authenticate(): Promise<Result<string>> {
   });
 
   return ok(token);
-}
-
-type Result<T> = ReturnType<typeof ok<T>> | ReturnType<typeof err>;
-
-function ok<T>(value: T) {
-  return {
-    isOk: true,
-    value,
-  } as const;
-}
-
-function err(message: string) {
-  return {
-    isOk: false,
-    error: new Error(message),
-  } as const;
 }
