@@ -1,23 +1,9 @@
 "use client";
-import { UploadButton } from "@uploadthing/react";
-import "@uploadthing/react/styles.css";
-import { OurFileRouter } from "../api/uploadthing/core";
 import { newPictures } from "../actions";
 
 export default function Upload() {
   return (
     <>
-      {/* <UploadButton<OurFileRouter> */}
-      {/*   endpoint="imageUploader" */}
-      {/*   onClientUploadComplete={async (res) => { */}
-      {/*     if (!res) return; */}
-      {/*     newPictures(res.map((r) => ({ url: r.fileUrl }))); */}
-      {/*   }} */}
-      {/*   onUploadError={(error: Error) => { */}
-      {/*     console.error(error); */}
-      {/*   }} */}
-      {/* /> */}
-
       <label role="button" className="bg-blue-500 rounded-lg p-2">
         Choose files
         <input
@@ -58,8 +44,6 @@ async function preUpload(
       files: files.map((f) => ({ name: f.name, type: f.type })),
     }),
   }).then((r) => r.json());
-
-  console.log("asdf", data);
 
   return data.files;
 }
