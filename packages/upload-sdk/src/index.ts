@@ -1,16 +1,12 @@
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { z } from "zod";
+import { BasicConfig, MoreConfig, PresignedUploads } from "./types";
 
-type Config = {
-  R2_ACCOUNT_ID: string;
-  R2_ACCESS_KEY: string;
-  R2_SECRET_KEY: string;
-};
-
-export class Client {
+class Client {
   private s3: S3Client;
 
-  constructor(config: Config) {
+  constructor(config: BasicConfig) {
     this.s3 = new S3Client({
       region: "auto",
       endpoint: `https://${config.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
@@ -48,4 +44,68 @@ export class Client {
 
     return { files };
   }
+}
+
+export function createUploadHandler(config: BasicConfig & MoreConfig) {
+  const client = new Client(config);
+
+  const requestSchema = z.object({
+    files: filesChema,
+  });
+
+  return async (request: Request): Promise<Response> => {
+    const res = requestSchema.safeParse(await request.json());
+
+    if (!res.success) {
+      return new Response(
+        JSON.stringify({
+          message: "bad request data",
+          errors: res.error.formErrors.fieldErrors,
+        }),
+        {
+          status: 400,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    }
+
+    return new Response(
+      JSON.stringify(await prepareUploads(client, config, res.data.files)),
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+  };
+}
+
+const filesChema = z.array(
+  z.object({
+    name: z.string().min(1),
+    type: z.string().min(1),
+  })
+);
+
+async function prepareUploads(
+  client: Client,
+  config: BasicConfig & MoreConfig,
+  files: z.infer<typeof filesChema>
+): Promise<PresignedUploads> {
+  const res = await client.presign({
+    bucketName: config.R2_BUCKET_NAME,
+    files: files,
+  });
+
+  const fileData = res.files.map((f) => ({
+    name: f.name,
+    url: `${config.R2_BUCKET_URL}/${f.key}`,
+    key: f.key,
+    uploadUrl: f.presignedUrl,
+  }));
+
+  return Object.fromEntries(fileData.map(({ name, ...f }) => [name, f]));
 }

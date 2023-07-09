@@ -1,4 +1,5 @@
 "use client";
+import { PresignedUploads } from "upload-sdk/dist/types";
 import { newPictures } from "../actions";
 
 export default function Upload() {
@@ -35,9 +36,7 @@ export default function Upload() {
   );
 }
 
-async function preUpload(
-  files: File[]
-): Promise<Record<string, { uploadUrl: string; url: string }>> {
+async function preUpload(files: File[]): Promise<PresignedUploads> {
   const data = await fetch("/api/upload", {
     method: "POST",
     body: JSON.stringify({
@@ -45,5 +44,5 @@ async function preUpload(
     }),
   }).then((r) => r.json());
 
-  return data.files;
+  return data;
 }
