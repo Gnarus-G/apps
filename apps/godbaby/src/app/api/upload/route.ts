@@ -9,7 +9,21 @@ const client = new Client({
 });
 
 export async function POST(request: Request) {
-  const res = await request.json();
+  const data = await request.json();
 
-  return NextResponse.json({ res });
+  const res = await client.presign({
+    bucketName: process.env.R2_BUCKET_NAME!,
+    files: data.files,
+  });
+
+  const files = res.files.map((f) => ({
+    name: f.name,
+    url: `${process.env.NEXT_PUBLIC_R2_BUCKET_URL}/${f.key}`,
+    key: f.key,
+    uploadUrl: f.presignedUrl,
+  }));
+
+  return NextResponse.json({
+    files: Object.fromEntries(files.map(({ name, ...f }) => [name, f])),
+  });
 }

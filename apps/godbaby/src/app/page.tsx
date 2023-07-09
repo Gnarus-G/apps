@@ -19,7 +19,7 @@ export default async function Home() {
           <Picture key={pic.id} {...pic} />
         ))}
       </section>
-      <aside className="sticky bottom-0 mt-5 w-full">
+      <aside className="sticky bottom-0 mt-5 w-full flex justify-center py-2">
         <Upload />
       </aside>
     </main>
