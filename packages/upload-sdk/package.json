@@ -1,0 +1,28 @@
+{
+  "name": "upload-sdk",
+  "version": "0.0.1",
+  "description": "Wrap the S3 Client sdk and simplify uploading to R2 Buckets",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "dev": "pnpm build --watch",
+    "build": "tsup src --dts"
+  },
+  "keywords": [
+    "files",
+    "upload",
+    "r2",
+    "s3",
+    "buckets"
+  ],
+  "author": "Gnarus-G",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.367.0",
+    "@aws-sdk/s3-request-presigner": "^3.367.0"
+  },
+  "devDependencies": {
+    "tsup": "^7.1.0",
+    "typescript": "^5.1.6"
+  }
+}
