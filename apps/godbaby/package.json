@@ -16,8 +16,6 @@
     "autoprefixer": "10.4.14",
     "aws-crt": "^1.15.20",
     "drizzle-orm": "^0.25.4",
-    "eslint": "8.41.0",
-    "eslint-config-next": "13.4.4",
     "jsonwebtoken": "^9.0.0",
     "next": "13.4.4",
     "postcss": "8.4.24",
@@ -29,6 +27,7 @@
     "upload-sdk": "workspace:*"
   },
   "devDependencies": {
-    "@types/jsonwebtoken": "^9.0.2"
+    "@types/jsonwebtoken": "^9.0.2",
+    "eslint-config-custom": "workspace:*"
   }
 }
