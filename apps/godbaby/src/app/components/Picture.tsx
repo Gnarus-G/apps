@@ -70,7 +70,7 @@ export default function Picture({ url: src, createdAt, id }: Picture) {
                 </button>
                 <button
                   className="float-right text-red-600"
-                  onClick={() => deletePicture(id)}
+                  onClick={() => deletePicture(id, src)}
                 >
                   Yes, Delete!
                 </button>

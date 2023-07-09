@@ -1,11 +1,15 @@
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  DeleteObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { z } from "zod";
 import { BasicConfig, MoreConfig, PresignedUploads } from "./types";
 
 export { uploadFiles } from "./client";
 
-class Client {
+export class Bucket {
   private s3: S3Client;
 
   constructor(config: BasicConfig) {
@@ -46,43 +50,55 @@ class Client {
 
     return { files };
   }
-}
 
-export function createUploadHandler(config: BasicConfig & MoreConfig) {
-  const client = new Client(config);
+  async deleteByFileUrl(url: URL, bucketName: string) {
+    const key = new URL(url).pathname.slice(1);
 
-  const requestSchema = z.object({
-    files: filesChema,
-  });
+    const input = {
+      Bucket: bucketName,
+      Key: key,
+    };
 
-  return async (request: Request): Promise<Response> => {
-    const res = requestSchema.safeParse(await request.json());
+    const command = new DeleteObjectCommand(input);
 
-    if (!res.success) {
+    const response = await this.s3.send(command);
+
+    console.log("deleted file", key, {
+      deleted: response.DeleteMarker,
+      metadata: response.$metadata,
+    });
+  }
+
+  createUploadHandler(config: MoreConfig) {
+    return async (request: Request): Promise<Response> => {
+      const res = requestSchema.safeParse(await request.json());
+
+      if (!res.success) {
+        return new Response(
+          JSON.stringify({
+            message: "bad request data",
+            errors: res.error.formErrors.fieldErrors,
+          }),
+          {
+            status: 400,
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      }
+
       return new Response(
-        JSON.stringify({
-          message: "bad request data",
-          errors: res.error.formErrors.fieldErrors,
-        }),
+        JSON.stringify(await prepareUploads(this, config, res.data.files)),
         {
-          status: 400,
+          status: 200,
           headers: {
             "Content-Type": "application/json",
           },
         }
       );
-    }
-
-    return new Response(
-      JSON.stringify(await prepareUploads(client, config, res.data.files)),
-      {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-  };
+    };
+  }
 }
 
 const filesChema = z.array(
@@ -92,9 +108,13 @@ const filesChema = z.array(
   })
 );
 
+const requestSchema = z.object({
+  files: filesChema,
+});
+
 async function prepareUploads(
-  client: Client,
-  config: BasicConfig & MoreConfig,
+  client: Bucket,
+  config: MoreConfig,
   files: z.infer<typeof filesChema>
 ): Promise<PresignedUploads> {
   const res = await client.presign({
