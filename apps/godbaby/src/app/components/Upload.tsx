@@ -5,7 +5,11 @@ import { newPictures } from "../actions";
 export default function Upload() {
   return (
     <>
-      <label role="button" className="bg-blue-500 rounded-lg p-2">
+      <label
+        role="button"
+        tabIndex={0}
+        className="bg-blue-500 hover:bg-blue-600 rounded-lg p-2 transition active:scale-95"
+      >
         Choose files
         <input
           hidden
