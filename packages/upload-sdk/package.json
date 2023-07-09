@@ -6,7 +6,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "dev": "pnpm build --watch & tsc --watch",
-    "build": "tsup src --dts --sourcemap"
+    "build": "tsup src/index.ts --dts --sourcemap"
   },
   "keywords": [
     "files",

@@ -1,5 +1,5 @@
 "use client";
-import { PresignedUploads } from "upload-sdk/dist/types";
+import { uploadFiles } from "upload-sdk";
 import { newPictures } from "../actions";
 
 export default function Upload() {
@@ -15,34 +15,22 @@ export default function Upload() {
           accept="image/*"
           onChange={async (e) => {
             const files = Array.from(e.target.files!);
-            const uploadUrls = await preUpload(files);
+            const uploadUrls = await uploadFiles(files);
 
-            await Promise.all(
-              files.map((file) =>
-                fetch(uploadUrls[file.name].uploadUrl, {
-                  method: "PUT",
-                  body: file,
-                })
-              )
-            );
+            const urls = uploadUrls
+              .filter((r) => r.isOk)
+              .map((r: any) => ({ url: r.data.url }));
 
-            await newPictures(
-              files.map((f) => ({ url: uploadUrls[f.name].url }))
-            );
+            if (urls.length) {
+              await newPictures(urls);
+            }
+
+            uploadUrls
+              .filter((r) => !r.isOk)
+              .forEach((r) => console.error("failed to upload", r));
           }}
         />
       </label>
     </>
   );
-}
-
-async function preUpload(files: File[]): Promise<PresignedUploads> {
-  const data = await fetch("/api/upload", {
-    method: "POST",
-    body: JSON.stringify({
-      files: files.map((f) => ({ name: f.name, type: f.type })),
-    }),
-  }).then((r) => r.json());
-
-  return data;
 }
