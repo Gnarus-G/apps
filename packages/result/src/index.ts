@@ -15,6 +15,8 @@ type ErrDto<E> = {
 type Ok<T> = OkDto<T> & ResultImpl<T, never>;
 type Err<E> = ErrDto<E> & ResultImpl<never, E>;
 
+export type SplitResults<T, E> = [Array<Ok<T>>, Array<Err<E>>];
+
 export namespace Result {
   export function isOk<T, E>(result: Result<T, E>): result is Ok<T> {
     return result.isOk;
@@ -24,9 +26,7 @@ export namespace Result {
     return !result.isOk;
   }
 
-  export function split<T, E>(
-    data: Array<Result<T, E>>
-  ): [Array<Ok<T>>, Array<Err<E>>] {
+  export function split<T, E>(data: Array<Result<T, E>>): SplitResults<T, E> {
     return [data.filter(isOk), data.filter(isErr)];
   }
 }
