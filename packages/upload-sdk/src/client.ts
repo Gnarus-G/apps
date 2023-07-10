@@ -29,8 +29,10 @@ export async function uploadFiles(
   return Result.split(data);
 }
 
-async function preUpload(files: File[]) {
-  return await handle<PresignedUploads>(
+async function preUpload(
+  files: File[]
+): Promise<Result<PresignedUploads, unknown>> {
+  const result = await Result.fromPromise(
     fetch("/api/upload", {
       method: "POST",
       body: JSON.stringify({
@@ -38,18 +40,8 @@ async function preUpload(files: File[]) {
       }),
     })
   );
-}
 
-async function handle<D>(p: Promise<Response>): Promise<Result<D, unknown>> {
-  const res = await p;
-  try {
-    if (res.ok) {
-      return ok(await res.json());
-    }
+  const r = result.unwrap();
 
-    return err(await res.json());
-  } catch (e) {
-    console.error("[Upload SDK - Client]", "something went wrong with data", e);
-    return err("bad data");
-  }
+  return r.ok ? ok((await r.json()) as PresignedUploads) : err(await r.json());
 }
