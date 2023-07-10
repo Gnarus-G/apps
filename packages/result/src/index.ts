@@ -38,6 +38,12 @@ export namespace Result {
   }
 }
 
+class UnwrapError extends Error {
+  constructor(message: string, public cause: unknown) {
+    super(message);
+  }
+}
+
 class ResultImpl<T, E> {
   #dto: ResultDto<T, E>;
 
@@ -45,11 +51,17 @@ class ResultImpl<T, E> {
     this.#dto = dto;
   }
 
-  unwrap(): T {
+  expect(message: string): T {
     if (!this.#dto.isOk) {
-      throw this.#dto.error;
+      throw new UnwrapError(message, this.#dto.error);
     }
     return this.#dto.value;
+  }
+
+  unwrap(): T {
+    return this.expect(
+      `tried and failed to unwrap an Result of the Err variant`
+    );
   }
 
   unwrapOrElse<R extends T>(f: (e: E) => R): T {

@@ -6,9 +6,7 @@ export async function uploadFiles(
 ): Promise<SplitResults<PresignedUploads[string], File>> {
   const uploadUrls = await preUpload(files);
 
-  const urls = uploadUrls.unwrapOrElse(() => {
-    throw new Error("failed to get presigned urls");
-  });
+  const urls = uploadUrls.expect("failed to get presigned urls");
 
   const data = await Promise.all(
     files.map(async (file) => {
@@ -41,7 +39,7 @@ async function preUpload(
     })
   );
 
-  const r = result.unwrap();
+  const r = result.expect("failed to fetch /api/upload");
 
   return r.ok ? ok((await r.json()) as PresignedUploads) : err(await r.json());
 }
