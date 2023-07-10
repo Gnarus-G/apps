@@ -1,35 +1,30 @@
+import { Result, err, ok } from "result";
 import { PresignedUploads } from "./types";
 
-export async function uploadFiles(
-  files: File[]
-): Promise<Result<PresignedUploads[string], File>[]> {
+export async function uploadFiles(files: File[]) {
   const uploadUrls = await preUpload(files);
 
-  if (!uploadUrls.isOk) {
+  const urls = uploadUrls.unwrapOrElse(() => {
     throw new Error("failed to get presigned urls");
-  }
+  });
 
-  return await Promise.all(
+  const data = await Promise.all(
     files.map(async (file) => {
-      const data = uploadUrls.data[file.name];
+      const data = urls[file.name];
       const res = await fetch(data.uploadUrl, {
         method: "PUT",
         body: file,
       });
 
       if (res.ok) {
-        return {
-          isOk: true,
-          data,
-        };
+        return ok(data);
       }
 
-      return {
-        isOk: false,
-        error: file,
-      };
+      return err(file);
     })
   );
+
+  return Result.split(data);
 }
 
 async function preUpload(files: File[]) {
@@ -45,36 +40,14 @@ async function preUpload(files: File[]) {
 
 async function handle<D>(p: Promise<Response>): Promise<Result<D, unknown>> {
   const res = await p;
-
   try {
     if (res.ok) {
-      return {
-        isOk: true,
-        data: await res.json(),
-      };
+      return ok(await res.json());
     }
 
-    return {
-      isOk: false,
-      error: await res.json(),
-    };
+    return err(await res.json());
   } catch (e) {
     console.error("[Upload SDK - Client]", "something went wrong with data", e);
-    return {
-      isOk: false,
-      error: "bad data",
-    };
+    return err("bad data");
   }
 }
-
-type Result<T, E> = Ok<T> | Err<E>;
-
-type Ok<T> = {
-  isOk: true;
-  data: T;
-};
-
-type Err<E> = {
-  isOk: false;
-  error: E;
-};

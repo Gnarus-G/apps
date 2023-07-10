@@ -19,19 +19,15 @@ export default function Upload() {
           accept="image/*"
           onChange={async (e) => {
             const files = Array.from(e.target.files!);
-            const uploadUrls = await uploadFiles(files);
+            const [uploadUrls, failedUrls] = await uploadFiles(files);
 
-            const urls = uploadUrls
-              .filter((r) => r.isOk)
-              .map((r: any) => ({ url: r.data.url }));
+            const urls = uploadUrls.map((r) => ({ url: r.data.url }));
 
             if (urls.length) {
               await newPictures(urls);
             }
 
-            uploadUrls
-              .filter((r) => !r.isOk)
-              .forEach((r) => console.error("failed to upload", r));
+            failedUrls.forEach((r) => console.error("failed to upload", r));
           }}
         />
       </label>

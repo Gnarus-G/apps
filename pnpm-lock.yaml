@@ -88,6 +88,15 @@ importers:
         specifier: ^7.9.1
         version: 7.32.2(eslint@8.41.0)
 
+  packages/result:
+    devDependencies:
+      tsup:
+        specifier: ^7.1.0
+        version: 7.1.0(typescript@5.1.6)
+      typescript:
+        specifier: ^5.1.6
+        version: 5.1.6
+
   packages/upload-sdk:
     dependencies:
       '@aws-sdk/client-s3':
@@ -102,6 +111,9 @@ importers:
       aws-crt:
         specifier: ^1.15.20
         version: 1.15.20
+      result:
+        specifier: workspace:*
+        version: link:../result
       zod:
         specifier: ^3.21.4
         version: 3.21.4
