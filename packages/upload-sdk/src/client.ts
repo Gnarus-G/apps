@@ -1,7 +1,9 @@
 import { Result, err, ok } from "result";
 import { PresignedUploads } from "./types";
 
-export async function uploadFiles(files: File[]) {
+export async function uploadFiles(
+  files: File[]
+): Promise<ReturnType<typeof Result.split<PresignedUploads[string], File>>> {
   const uploadUrls = await preUpload(files);
 
   const urls = uploadUrls.unwrapOrElse(() => {
