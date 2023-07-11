@@ -9,12 +9,16 @@ export async function uploadFiles(files: File[]) {
   const data = await Promise.all(
     files.map(async (file) => {
       const data = urls[file.name];
-      const res = await fetch(data.uploadUrl, {
-        method: "PUT",
-        body: file,
-      });
+      const res = await Result.fromPromise(
+        fetch(data.uploadUrl, {
+          method: "PUT",
+          body: file,
+        })
+      );
 
-      return Result.make((ok, err) => (res.ok ? ok(data) : err(file)));
+      return res
+        .map((res) => Result.make((ok, err) => (res.ok ? ok(data) : err(file))))
+        .andThen((r) => r);
     })
   );
 

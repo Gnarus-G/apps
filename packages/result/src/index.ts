@@ -101,9 +101,7 @@ export abstract class Result<T, E> {
     return new Err(this.state.error);
   }
 
-  async mapAsyncsadf<R>(
-    mapper: (curr: T) => Promise<R>
-  ): Promise<Result<R, E>> {
+  async mapAsync<R>(mapper: (curr: T) => Promise<R>): Promise<Result<R, E>> {
     if (this.state.isOk) {
       return new Ok(await mapper(this.state.value));
     }
