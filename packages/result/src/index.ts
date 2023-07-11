@@ -76,7 +76,7 @@ export abstract class Result<T, E> {
 
   expect(message: string): T {
     if (!this.#dto.isOk) {
-      throw new UnwrapError(message, this.#dto.error);
+      throw new ResultUnwrapError(message, this.#dto.error);
     }
     return this.#dto.value;
   }
@@ -118,7 +118,7 @@ export abstract class Result<T, E> {
   }
 }
 
-class UnwrapError extends Error {
+class ResultUnwrapError extends Error {
   constructor(message: string, public cause: unknown) {
     super(message);
   }
