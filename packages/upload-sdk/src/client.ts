@@ -1,9 +1,7 @@
-import { Result, SplitResults, err, ok } from "result";
+import { Result } from "result";
 import { PresignedUploads } from "./types";
 
-export async function uploadFiles(
-  files: File[]
-): Promise<SplitResults<PresignedUploads[string], File>> {
+export async function uploadFiles(files: File[]) {
   const uploadUrls = await preUpload(files);
 
   const urls = uploadUrls.expect("failed to get presigned urls");
@@ -16,20 +14,14 @@ export async function uploadFiles(
         body: file,
       });
 
-      if (res.ok) {
-        return ok(data);
-      }
-
-      return err(file);
+      return Result.make((ok, err) => (res.ok ? ok(data) : err(file)));
     })
   );
 
   return Result.split(data);
 }
 
-async function preUpload(
-  files: File[]
-): Promise<Result<PresignedUploads, unknown>> {
+async function preUpload(files: File[]) {
   const result = await Result.fromPromise(
     fetch("/api/upload", {
       method: "POST",
@@ -41,5 +33,9 @@ async function preUpload(
 
   const r = result.expect("failed to fetch /api/upload");
 
-  return r.ok ? ok((await r.json()) as PresignedUploads) : err(await r.json());
+  return Result.makeAsync(async (ok, err) => {
+    return r.ok
+      ? ok((await r.json()) as PresignedUploads)
+      : err(await r.json());
+  });
 }
