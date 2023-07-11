@@ -19,6 +19,59 @@ export abstract class Result<T, E> {
     this.#dto = dto;
   }
 
+  static ok(): Result<void, never>;
+  static ok<T>(value: T): Result<T, never>;
+  static ok<T>(value?: T): Result<T | void, never> {
+    if (value !== undefined && arguments.length > 0) {
+      return new Ok(value);
+    }
+
+    return new Ok(undefined);
+  }
+
+  static err<E>(error: E): Result<never, E> {
+    return new Err(error);
+  }
+
+  static make<T, E>(
+    factory: (okFn: typeof this.ok, errFn: typeof this.err) => Result<T, E>
+  ) {
+    return factory(this.ok, this.err);
+  }
+
+  static async makeAsync<T, E>(
+    factory: (
+      okFn: typeof this.ok,
+      errFn: typeof this.err
+    ) => Promise<Result<T, E>>
+  ) {
+    return factory(this.ok, this.err);
+  }
+
+  static isOk<T, E>(result: Result<T, E>): result is Ok<T> {
+    return result instanceof Ok;
+  }
+
+  static isErr<T, E>(result: Result<T, E>): result is Err<E> {
+    return result instanceof Err;
+  }
+
+  static deref<T, E>(result: Result<T, E>): ResultDto<T, E> {
+    return result.deref();
+  }
+
+  static split<T, E>(data: Array<Result<T, E>>): SplitResults<T, E> {
+    return [data.filter(this.isOk), data.filter(this.isErr)];
+  }
+
+  static async fromPromise<T>(p: Promise<T>): Promise<Result<T, unknown>> {
+    try {
+      return new Ok(await p);
+    } catch (e) {
+      return new Err(e);
+    }
+  }
+
   abstract deref(): ResultDto<T, E>;
 
   expect(message: string): T {
@@ -62,60 +115,6 @@ export abstract class Result<T, E> {
       return thenCall(this.#dto.value);
     }
     return new Err(this.#dto.error);
-  }
-}
-
-export namespace Result {
-  function ok(): Result<void, never>;
-  function ok<T>(value: T): Result<T, never>;
-  function ok<T>(value?: T): Result<T | void, never> {
-    if (value !== undefined && arguments.length > 0) {
-      return new Ok(value);
-    }
-
-    return new Ok(undefined);
-  }
-
-  function err<E>(error: E): Result<never, E> {
-    return new Err(error);
-  }
-
-  export function make<T, E>(
-    factory: (okFn: typeof ok, errFn: typeof err) => Result<T, E>
-  ) {
-    return factory(ok, err);
-  }
-
-  export async function makeAsync<T, E>(
-    factory: (okFn: typeof ok, errFn: typeof err) => Promise<Result<T, E>>
-  ) {
-    return factory(ok, err);
-  }
-
-  export function isOk<T, E>(result: Result<T, E>): result is Ok<T> {
-    return result instanceof Ok;
-  }
-
-  export function isErr<T, E>(result: Result<T, E>): result is Err<E> {
-    return result instanceof Err;
-  }
-
-  export function deref<T, E>(result: Result<T, E>): ResultDto<T, E> {
-    return result.deref();
-  }
-
-  export function split<T, E>(data: Array<Result<T, E>>): SplitResults<T, E> {
-    return [data.filter(isOk), data.filter(isErr)];
-  }
-
-  export async function fromPromise<T>(
-    p: Promise<T>
-  ): Promise<Result<T, unknown>> {
-    try {
-      return ok(await p);
-    } catch (e) {
-      return err(e);
-    }
   }
 }
 
