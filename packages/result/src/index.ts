@@ -1,4 +1,4 @@
-export type Result<T, E> = ResultDto<T, E> & ResultImpl<T, E>;
+export type Result<T, E> = ResultImpl<T, E>;
 
 type ResultDto<T, E> = OkDto<T> | ErrDto<E>;
 
@@ -16,11 +16,15 @@ export type SplitResults<T, E> = [Array<Ok<T>>, Array<Err<E>>];
 
 export namespace Result {
   export function isOk<T, E>(result: Result<T, E>): result is Ok<T> {
-    return result.isOk;
+    return result instanceof Ok;
   }
 
   export function isErr<T, E>(result: Result<T, E>): result is Err<E> {
-    return !result.isOk;
+    return result instanceof Err;
+  }
+
+  export function deref<T, E>(result: Result<T, E>): ResultDto<T, E> {
+    return result.deref();
   }
 
   export function split<T, E>(data: Array<Result<T, E>>): SplitResults<T, E> {
@@ -44,12 +48,14 @@ class UnwrapError extends Error {
   }
 }
 
-class ResultImpl<T, E> {
-  #dto: ResultDto<T, E>;
+abstract class ResultImpl<T, E> {
+  readonly #dto: ResultDto<T, E>;
 
   constructor(dto: ResultDto<T, E>) {
     this.#dto = dto;
   }
+
+  abstract deref(): ResultDto<T, E>;
 
   expect(message: string): T {
     if (!this.#dto.isOk) {
@@ -96,22 +102,34 @@ class ResultImpl<T, E> {
 }
 
 class Ok<T> extends ResultImpl<T, never> {
-  isOk: true = true;
   constructor(public value: T) {
     super({
       isOk: true,
       value,
     });
   }
+
+  deref(): OkDto<T> {
+    return {
+      isOk: true,
+      value: this.value,
+    };
+  }
 }
 
 class Err<E> extends ResultImpl<never, E> {
-  isOk: false = false;
   constructor(public error: E) {
     super({
       isOk: false,
       error,
     });
+  }
+
+  deref(): ErrDto<E> {
+    return {
+      isOk: false,
+      error: this.error,
+    };
   }
 }
 
