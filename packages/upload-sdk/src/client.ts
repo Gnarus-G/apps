@@ -18,7 +18,7 @@ export async function uploadFiles(files: File[]) {
 
       return res
         .map((res) => Result.make((ok, err) => (res.ok ? ok(data) : err(file))))
-        .andThen((r) => r);
+        .flatten();
     })
   );
 
@@ -35,11 +35,13 @@ async function preUpload(files: File[]) {
     })
   );
 
-  const r = result.expect("failed to fetch /api/upload");
+  const r = await result.mapAsync((r) =>
+    Result.makeAsync(async (ok, err) => {
+      return r.ok
+        ? ok((await r.json()) as PresignedUploads)
+        : err(await r.json());
+    })
+  );
 
-  return Result.makeAsync(async (ok, err) => {
-    return r.ok
-      ? ok((await r.json()) as PresignedUploads)
-      : err(await r.json());
-  });
+  return r.flatten();
 }

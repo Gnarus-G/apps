@@ -121,7 +121,20 @@ export abstract class Result<T, E> {
     }
     return new Err(this.state.error);
   }
+
+  flatten(): Result<ExtractOkValue<T>, E> {
+    if (this.state.isOk) {
+      const value = this.state.value;
+      if (value instanceof Result) {
+        return this.andThen((_) => value);
+      }
+    }
+
+    return this as any;
+  }
 }
+
+type ExtractOkValue<T> = T extends Result<infer D, unknown> ? D : T;
 
 class ResultUnwrapError extends Error {
   constructor(message: string, public cause: unknown) {
