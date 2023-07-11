@@ -135,21 +135,35 @@ class ResultUnwrapError extends Error {
 }
 
 class Ok<T> extends Result<T, never> {
-  state!: OkState<T>;
   constructor(value: T) {
     super({
       isOk: true,
       value,
     });
   }
+
+  /**
+   * This is perfectly safe, as we're on an {@link Ok} variant
+   * of {@link Result}
+   */
+  unwrap(): T {
+    return (this.state as OkState<T>).value;
+  }
 }
 
 class Err<E> extends Result<never, E> {
-  state!: ErrState<E>;
   constructor(error: E) {
     super({
       isOk: false,
       error,
     });
+  }
+
+  /**
+   * THIS WILL THROW AN ERROR!
+   * @throws ResultUnwrapError
+   */
+  unwrap(): never {
+    return super.unwrap();
   }
 }
