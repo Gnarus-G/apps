@@ -64,7 +64,6 @@ export class Bucket {
     const response = await this.s3.send(command);
 
     console.log("deleted file", key, {
-      deleted: response.DeleteMarker,
       metadata: response.$metadata,
     });
   }
