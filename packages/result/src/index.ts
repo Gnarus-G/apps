@@ -110,9 +110,16 @@ export abstract class Result<T, E> {
     return new Err(this.state.error);
   }
 
-  ifOk<R>(thenCall: (curr: T) => Result<R, E>): Result<R, E> {
+  /**
+   * Calls `operation` if the result is {@link Ok}, otherwise
+   * returns {@link Err} for it.
+   *
+   * @param operation after
+   *
+   */
+  andThen<R>(operation: (curr: T) => Result<R, E>): Result<R, E> {
     if (this.state.isOk) {
-      return thenCall(this.state.value);
+      return operation(this.state.value);
     }
     return new Err(this.state.error);
   }
