@@ -21,7 +21,7 @@ export default function Upload() {
             const files = Array.from(e.target.files!);
             const [uploadUrls, failedUrls] = await uploadFiles(files);
 
-            const urls = uploadUrls.map((r) => ({ url: r.deref().value.url }));
+            const urls = uploadUrls.map((r) => ({ url: r.state.value.url }));
 
             if (urls.length) {
               await newPictures(urls);

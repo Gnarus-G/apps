@@ -13,15 +13,13 @@ type ErrState<E> = {
 export type SplitResults<T, E> = [Array<Ok<T>>, Array<Err<E>>];
 
 export abstract class Result<T, E> {
-  protected readonly state: ResultState<T, E>;
-
-  constructor(dto: ResultState<T, E>) {
-    this.state = dto;
+  constructor(public readonly state: ResultState<T, E>) {
+    Object.freeze(this.state);
   }
 
-  static ok(): Result<void, never>;
-  static ok<T>(value: T): Result<T, never>;
-  static ok<T>(value?: T): Result<T | void, never> {
+  static ok(): Ok<void>;
+  static ok<T>(value: T): Ok<T>;
+  static ok<T>(value?: T): Ok<T | void> {
     if (value !== undefined && arguments.length > 0) {
       return new Ok(value);
     }
@@ -29,7 +27,7 @@ export abstract class Result<T, E> {
     return new Ok(undefined);
   }
 
-  static err<E>(error: E): Result<never, E> {
+  static err<E>(error: E): Err<E> {
     return new Err(error);
   }
 
@@ -56,10 +54,6 @@ export abstract class Result<T, E> {
     return result instanceof Err;
   }
 
-  static deref<T, E>(result: Result<T, E>): ResultState<T, E> {
-    return result.deref();
-  }
-
   static split<T, E>(data: Array<Result<T, E>>): SplitResults<T, E> {
     return [data.filter(this.isOk), data.filter(this.isErr)];
   }
@@ -71,8 +65,6 @@ export abstract class Result<T, E> {
       return new Err(e);
     }
   }
-
-  abstract deref(): ResultState<T, E>;
 
   expect(message: string): T {
     if (!this.state.isOk) {
@@ -143,27 +135,21 @@ class ResultUnwrapError extends Error {
 }
 
 class Ok<T> extends Result<T, never> {
+  state!: OkState<T>;
   constructor(value: T) {
     super({
       isOk: true,
       value,
     });
   }
-
-  deref(): OkState<T> {
-    return this.state as OkState<T>;
-  }
 }
 
 class Err<E> extends Result<never, E> {
+  state!: ErrState<E>;
   constructor(error: E) {
     super({
       isOk: false,
       error,
     });
-  }
-
-  deref(): ErrState<E> {
-    return this.state as ErrState<E>;
   }
 }
