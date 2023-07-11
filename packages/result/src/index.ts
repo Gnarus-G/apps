@@ -1,11 +1,11 @@
-type ResultDto<T, E> = OkDto<T> | ErrDto<E>;
+type ResultState<T, E> = OkState<T> | ErrState<E>;
 
-type OkDto<T> = {
+type OkState<T> = {
   isOk: true;
   value: T;
 };
 
-type ErrDto<E> = {
+type ErrState<E> = {
   isOk: false;
   error: E;
 };
@@ -13,10 +13,10 @@ type ErrDto<E> = {
 export type SplitResults<T, E> = [Array<Ok<T>>, Array<Err<E>>];
 
 export abstract class Result<T, E> {
-  readonly #dto: ResultDto<T, E>;
+  protected readonly state: ResultState<T, E>;
 
-  constructor(dto: ResultDto<T, E>) {
-    this.#dto = dto;
+  constructor(dto: ResultState<T, E>) {
+    this.state = dto;
   }
 
   static ok(): Result<void, never>;
@@ -56,7 +56,7 @@ export abstract class Result<T, E> {
     return result instanceof Err;
   }
 
-  static deref<T, E>(result: Result<T, E>): ResultDto<T, E> {
+  static deref<T, E>(result: Result<T, E>): ResultState<T, E> {
     return result.deref();
   }
 
@@ -72,13 +72,13 @@ export abstract class Result<T, E> {
     }
   }
 
-  abstract deref(): ResultDto<T, E>;
+  abstract deref(): ResultState<T, E>;
 
   expect(message: string): T {
-    if (!this.#dto.isOk) {
-      throw new ResultUnwrapError(message, this.#dto.error);
+    if (!this.state.isOk) {
+      throw new ResultUnwrapError(message, this.state.error);
     }
-    return this.#dto.value;
+    return this.state.value;
   }
 
   unwrap(): T {
@@ -88,33 +88,33 @@ export abstract class Result<T, E> {
   }
 
   unwrapOrElse<R extends T>(f: (e: E) => R): T {
-    if (!this.#dto.isOk) {
-      return f(this.#dto.error);
+    if (!this.state.isOk) {
+      return f(this.state.error);
     }
-    return this.#dto.value;
+    return this.state.value;
   }
 
   map<R>(mapper: (curr: T) => R): Result<R, E> {
-    if (this.#dto.isOk) {
-      return new Ok(mapper(this.#dto.value));
+    if (this.state.isOk) {
+      return new Ok(mapper(this.state.value));
     }
-    return new Err(this.#dto.error);
+    return new Err(this.state.error);
   }
 
   async mapAsyncsadf<R>(
     mapper: (curr: T) => Promise<R>
   ): Promise<Result<R, E>> {
-    if (this.#dto.isOk) {
-      return new Ok(await mapper(this.#dto.value));
+    if (this.state.isOk) {
+      return new Ok(await mapper(this.state.value));
     }
-    return new Err(this.#dto.error);
+    return new Err(this.state.error);
   }
 
   ifOk<R>(thenCall: (curr: T) => Result<R, E>): Result<R, E> {
-    if (this.#dto.isOk) {
-      return thenCall(this.#dto.value);
+    if (this.state.isOk) {
+      return thenCall(this.state.value);
     }
-    return new Err(this.#dto.error);
+    return new Err(this.state.error);
   }
 }
 
@@ -125,33 +125,27 @@ class ResultUnwrapError extends Error {
 }
 
 class Ok<T> extends Result<T, never> {
-  constructor(public value: T) {
+  constructor(value: T) {
     super({
       isOk: true,
       value,
     });
   }
 
-  deref(): OkDto<T> {
-    return {
-      isOk: true,
-      value: this.value,
-    };
+  deref(): OkState<T> {
+    return this.state as OkState<T>;
   }
 }
 
 class Err<E> extends Result<never, E> {
-  constructor(public error: E) {
+  constructor(error: E) {
     super({
       isOk: false,
       error,
     });
   }
 
-  deref(): ErrDto<E> {
-    return {
-      isOk: false,
-      error: this.error,
-    };
+  deref(): ErrState<E> {
+    return this.state as ErrState<E>;
   }
 }
