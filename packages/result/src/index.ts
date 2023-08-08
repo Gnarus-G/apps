@@ -32,7 +32,10 @@ export abstract class Result<T, E> {
   }
 
   static make<T, E>(
-    factory: (okFn: typeof this.ok, errFn: typeof this.err) => Result<T, E>
+    factory: (
+      okFn: (value: T) => Ok<T>,
+      errFn: (error: E) => Err<E>
+    ) => Result<T, E>
   ) {
     return factory(this.ok, this.err);
   }

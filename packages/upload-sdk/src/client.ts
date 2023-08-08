@@ -16,8 +16,14 @@ export async function uploadFiles(files: File[]) {
         })
       );
 
+      Result.ok();
+
       return res
-        .map((res) => Result.make((ok, err) => (res.ok ? ok(data) : err(file))))
+        .map((res) =>
+          Result.make<PresignedUploads[number], unknown>((ok, err) =>
+            res.ok ? Result.ok(data) : Result.err(file)
+          )
+        )
         .flatten();
     })
   );
@@ -36,10 +42,10 @@ async function preUpload(files: File[]) {
   );
 
   const r = await result.mapAsync((r) =>
-    Result.makeAsync(async (ok, err) => {
+    Result.makeAsync<PresignedUploads, unknown>(async (ok, err) => {
       return r.ok
-        ? ok((await r.json()) as PresignedUploads)
-        : err(await r.json());
+        ? Result.ok((await r.json()) as PresignedUploads)
+        : Result.err(await r.json());
     })
   );
 
